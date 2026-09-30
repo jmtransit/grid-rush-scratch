@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+
+.scratch-card {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #111;
+}
+
+.number {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Arial, sans-serif;
+  font-size: 100px;
+  font-weight: bold;
+  color: #f5c542;
+}
+
+#scratchCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="scratch-card">
+  <div class="number">7</div>
+  <canvas id="scratchCanvas"></canvas>
+</div>
+
+<script>
+const canvas = document.getElementById("scratchCanvas");
+const ctx = canvas.getContext("2d");
+
+function setupCanvas() {
+  const rect = canvas.getBoundingClientRect();
+  const ratio = window.devicePixelRatio || 1;
+
+  canvas.width = rect.width * ratio;
+  canvas.height = rect.height * ratio;
+
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+  const gradient = ctx.createLinearGradient(0, 0, rect.width, rect.height);
+  gradient.addColorStop(0, "#8a6410");
+  gradient.addColorStop(.25, "#f5d76e");
+  gradient.addColorStop(.5, "#b8860b");
+  gradient.addColorStop(.75, "#ffe58a");
+  gradient.addColorStop(1, "#8a6410");
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, rect.width, rect.height);
+
+  ctx.fillStyle = "#3b2a00";
+  ctx.font = "bold 28px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("SCRATCH", rect.width / 2, rect.height / 2);
+}
+
+setupCanvas();
+
+let scratching = false;
+
+function scratch(e) {
+  if (!scratching) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  ctx.globalCompositeOperation = "destination-out";
+  ctx.beginPath();
+  ctx.arc(x, y, 30, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+canvas.addEventListener("pointerdown", function(e) {
+  scratching = true;
+  canvas.setPointerCapture(e.pointerId);
+  scratch(e);
+});
+
+canvas.addEventListener("pointermove", scratch);
+
+canvas.addEventListener("pointerup", function() {
+  scratching = false;
+});
+
+canvas.addEventListener("pointercancel", function() {
+  scratching = false;
+});
+</script>
+
+</body>
+</html>
